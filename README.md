@@ -1,5 +1,7 @@
 # HilbertPi: a Lean 4 proof of Hilbert's inequality, `‖H‖ ≤ π`
 
+[![Lean Action CI](https://github.com/troyjlee/hilbert-pi/actions/workflows/lean_action_ci.yml/badge.svg)](https://github.com/troyjlee/hilbert-pi/actions/workflows/lean_action_ci.yml)
+
 A machine-checked proof of **Hilbert's inequality** — the spectral norm of the
 Hilbert matrix `H[i,j] = 1/(i+j+1)` on `ℓ²(ℕ)` is at most `π` — following the
 combinatorial proof in *A Combinatorial Proof of Hilbert's Inequality*
