@@ -74,10 +74,17 @@ general-`λ` names are in `HilbertPi.General`.
 | Theorem (domination) | `T ≤ (π csc πλ) M` | `T_le_pi_mul_M` | `T_le` |
 | Corollary / Theorem | `‖T_{n,λ}‖ ≤ π csc(πλ)` | `half_hilbert_bound` | `half_hilbert_bound_general` |
 | Corollary / Theorem | Hilbert/Schur inequality | `hilbert_inequality_finite` | `schur_inequality_finite` |
-| — | `ℓ²` statement `‖H‖ ≤ π` | `hilbert_inequality_l2` | (not formalized) |
+| — | `ℓ²` statement `‖H‖ ≤ π` | `hilbert_inequality_l2` | (upper bound; `ℓ²` sharpness below) |
+| Prop. (`exact-eig`) | eigenvector identity `H_λ x = θ x` | — | `eigen_identity` |
+| Prop. (`exact-eig`) | norm attained: `‖H_λ‖ = π csc(πλ)` | — | `schur_norm_attained` |
 
-The `ℓ²` sharpness results of the paper's final section (`‖H_λ‖ = π csc(πλ)`)
-are not formalized.
+**Sharpness** (`HilbertPi/General/Sharp.lean`, `0 < λ < 1/2`): the square-summable
+eigenvector `gx λ` satisfies `∑' j, gx_j/(i+j+λ) = π csc(πλ) · gx_i`
+(`eigen_identity`), and its Rayleigh quotient equals `π csc(πλ)`
+(`schur_norm_attained`), so the constant is exactly attained. The proof adds
+Wendel's Γ bounds, a pointwise `Γ`-ratio limit, and Tannery's theorem on top of
+the finite construction. The remaining `λ ≥ 1/2` case of the paper's final
+section is not formalized.
 
 ## Building
 

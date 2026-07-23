@@ -39,3 +39,7 @@ example : HilbertPi.General.gx (1/2 : ℝ) 2 = 3/8 := by
   norm_num [HilbertPi.General.gx, Finset.prod_range_succ]
 example : HilbertPi.General.gy (1/2 : ℝ) 2 = 3/8 := by
   norm_num [HilbertPi.General.gy, Finset.prod_range_succ]
+
+/- ℓ² sharpness (paper §5): the norm π csc(πλ) is attained. -/
+#print axioms HilbertPi.General.eigen_identity
+#print axioms HilbertPi.General.schur_norm_attained
