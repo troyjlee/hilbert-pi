@@ -43,3 +43,7 @@ example : HilbertPi.General.gy (1/2 : ℝ) 2 = 3/8 := by
 /- ℓ² sharpness (paper §5): the norm π csc(πλ) is attained. -/
 #print axioms HilbertPi.General.eigen_identity
 #print axioms HilbertPi.General.schur_norm_attained
+
+/- λ ≥ 1/2 sharpness (paper Theorem sharp-large): ‖H_λ‖ = π. -/
+#print axioms HilbertPi.General.hilbert_le_pi_finite
+#print axioms HilbertPi.General.norm_ge_pi_sharp

@@ -50,6 +50,7 @@ embedding steps are shared with the `λ = 1/2` warm-up.
 | `SchurTest.lean` | the finite Schur test for symmetric nonnegative kernels | Lemma 2 |
 | `Main.lean` | assembly: finite, finitely-supported, and `ℓ²` statements | Corollaries 11–12 |
 | `General/*.lean` | the same pipeline for general `λ` via the Γ function | Section 4 |
+| `General/Sharp*.lean` | `ℓ²` sharpness: attained for `λ < 1/2`, approached for `λ ≥ 1/2` | Section 5 |
 
 The only analytic input is Wallis's product, used through Mathlib's
 `Real.Wallis.W_le : W k ≤ π/2`; everything else is finite `Finset` algebra.
@@ -77,14 +78,28 @@ general-`λ` names are in `HilbertPi.General`.
 | — | `ℓ²` statement `‖H‖ ≤ π` | `hilbert_inequality_l2` | (upper bound; `ℓ²` sharpness below) |
 | Prop. (`exact-eig`) | eigenvector identity `H_λ x = θ x` | — | `eigen_identity` |
 | Prop. (`exact-eig`) | norm attained: `‖H_λ‖ = π csc(πλ)` | — | `schur_norm_attained` |
+| Thm. (`sharp-large`) | `‖H_λ‖ ≤ π` for `λ ≥ 1/2` | — | `hilbert_le_pi_finite` |
+| Thm. (`sharp-large`) | `‖H_λ‖ ≥ π` for `λ ≥ 1/2` | — | `norm_ge_pi_sharp` |
 
-**Sharpness** (`HilbertPi/General/Sharp.lean`, `0 < λ < 1/2`): the square-summable
+**Sharpness, `0 < λ < 1/2`** (`HilbertPi/General/Sharp.lean`): the square-summable
 eigenvector `gx λ` satisfies `∑' j, gx_j/(i+j+λ) = π csc(πλ) · gx_i`
 (`eigen_identity`), and its Rayleigh quotient equals `π csc(πλ)`
 (`schur_norm_attained`), so the constant is exactly attained. The proof adds
 Wendel's Γ bounds, a pointwise `Γ`-ratio limit, and Tannery's theorem on top of
-the finite construction. The remaining `λ ≥ 1/2` case of the paper's final
-section is not formalized.
+the finite construction.
+
+**Sharpness, `λ ≥ 1/2`** (`HilbertPi/General/SharpLarge.lean`): here the norm is
+*not* attained and equals `π`. Both halves are formalized:
+
+* `hilbert_le_pi_finite` — the upper bound `‖H_λ‖ ≤ π`, by entrywise domination
+  `1/(i+j+λ) ≤ 1/(i+j+1/2)` from the `λ = 1/2` case;
+* `norm_ge_pi_sharp` — the lower bound: for every `ε > 0` some test vector
+  `x(μ)`, `μ ∈ [1/4, 1/2)`, has Rayleigh quotient exceeding `π - ε`.
+
+The lower bound uses the `μ < 1/2` eigenvectors as test vectors, the
+perturbation identity `∑ H_μ = ∑ H_λ + (λ-μ)E`, the *factored* error bound
+`E ≤ D²` (`E_le_D_sq`), and the divergence of `‖x(μ)‖²` as `μ ↑ 1/2`
+(`norm_sq_unbounded`).
 
 ## Building
 
