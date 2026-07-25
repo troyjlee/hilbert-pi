@@ -31,6 +31,10 @@ The sharpening to `‖H_λ‖ ≤ π csc(πλ)` for the matrix `H_λ[i,j] = 1/(i
   form of `T λ n` is bounded by `(π / sin(πλ)) ‖u‖ ‖v‖`.
 * `HilbertPi.General.schur_inequality_finite` — the finitely-supported Schur
   inequality `∑_{i,j<N} u_i v_j /(i+j+λ) ≤ π csc(πλ) √(∑u²) √(∑v²)`.
+* `HilbertPi.General.schur_summable`, `HilbertPi.General.schur_inequality_l2`,
+  `HilbertPi.General.schur_inequality_l2'` — the `ℓ²` statement: for
+  `f, g ∈ lp (fun _ : ℕ => ℝ) 2` the double series converges absolutely and
+  `|∑'_{i,j} f i * g j / (i+j+λ)| ≤ π csc(πλ) ‖f‖ ‖g‖`.
 
 Here the sequences are `gx i = ∏_{t<i}(t+λ)/(t+1) = Γ(i+λ)/(Γ(λ) i!)` and its
 dual `gy`; the analytic inputs are the log-convexity of `Γ`
@@ -50,7 +54,9 @@ embedding steps are shared with the `λ = 1/2` warm-up.
 | `SchurTest.lean` | the finite Schur test for symmetric nonnegative kernels | Lemma 2 |
 | `Main.lean` | assembly: finite, finitely-supported, and `ℓ²` statements | Corollaries 11–12 |
 | `General/*.lean` | the same pipeline for general `λ` via the Γ function | Section 4 |
+| `General/L2.lean` | lifting a finitely-supported bilinear bound to `ℓ²`, once and generically in the constant | Corollaries 11–12 |
 | `General/Sharp*.lean` | `ℓ²` sharpness: attained for `λ < 1/2`, approached for `λ ≥ 1/2` | Section 5 |
+| `General/OpNorm.lean` | the norm `‖H_λ‖` itself, and the two theorems `‖H_λ‖ = π csc(πλ)`, `‖H_λ‖ = π` | Section 5 |
 
 The only analytic input is Wallis's product, used through Mathlib's
 `Real.Wallis.W_le : W k ≤ π/2`; everything else is finite `Finset` algebra.
@@ -75,23 +81,44 @@ general-`λ` names are in `HilbertPi.General`.
 | Theorem (domination) | `T ≤ (π csc πλ) M` | `T_le_pi_mul_M` | `T_le` |
 | Corollary / Theorem | `‖T_{n,λ}‖ ≤ π csc(πλ)` | `half_hilbert_bound` | `half_hilbert_bound_general` |
 | Corollary / Theorem | Hilbert/Schur inequality | `hilbert_inequality_finite` | `schur_inequality_finite` |
-| — | `ℓ²` statement `‖H‖ ≤ π` | `hilbert_inequality_l2` | (upper bound; `ℓ²` sharpness below) |
+| — | `ℓ²` statement `‖H‖ ≤ π` | `hilbert_inequality_l2` | `schur_inequality_l2` |
+| Section 1 | the norm `‖H_λ‖` itself | — | `opNorm` |
 | Prop. (`exact-eig`) | eigenvector identity `H_λ x = θ x` | — | `eigen_identity` |
-| Prop. (`exact-eig`) | norm attained: `‖H_λ‖ = π csc(πλ)` | — | `schur_norm_attained` |
+| Prop. (`exact-eig`) | Rayleigh quotient of `x` equals `π csc(πλ)` | — | `schur_norm_attained` |
+| Prop. (`exact-eig`) | `‖H_λ‖ = π csc(πλ)` for `λ < 1/2` | — | `opNorm_eq_csc` |
+| Prop. (`exact-eig`) | the norm is *attained* on `ℓ²` | — | `schur_norm_attained_l2` |
 | Thm. (`sharp-large`) | `‖H_λ‖ ≤ π` for `λ ≥ 1/2` | — | `hilbert_le_pi_finite` |
-| Thm. (`sharp-large`) | `‖H_λ‖ ≥ π` for `λ ≥ 1/2` | — | `norm_ge_pi_sharp` |
+| Thm. (`sharp-large`) | Rayleigh quotient `> π - ε` | — | `norm_ge_pi_sharp` |
+| Thm. (`sharp-large`) | `‖H_λ‖ = π` for `λ ≥ 1/2` | — | `opNorm_eq_pi` |
 
-**Sharpness, `0 < λ < 1/2`** (`HilbertPi/General/Sharp.lean`): the square-summable
+**The norm** (`HilbertPi/General/OpNorm.lean`). `opNorm λ` is the norm exactly as
+the paper defines it in Section 1: the supremum of the bilinear form over
+*finitely supported* unit vectors,
+
+```
+opNorm λ = sSup { ∑_{i,j<N} u_i v_j /(i+j+λ) : ∑_{i<N} u_i² = ∑_{j<N} v_j² = 1 }.
+```
+
+Upper bounds on it come from `schur_inequality_finite` and `hilbert_le_pi_finite`
+directly; lower bounds come from the `ℓ²` Rayleigh estimates through
+`lt_opNorm_of_tsum`, which truncates an `ℓ²` test vector to a finitely supported
+one (the terms are nonnegative, so a square truncation `range N ×ˢ range N`
+eventually exceeds any bound below the total).
+
+**Sharpness, `0 < λ < 1/2`** (`Sharp.lean`, `OpNorm.lean`): the square-summable
 eigenvector `gx λ` satisfies `∑' j, gx_j/(i+j+λ) = π csc(πλ) · gx_i`
-(`eigen_identity`), and its Rayleigh quotient equals `π csc(πλ)`
-(`schur_norm_attained`), so the constant is exactly attained. The proof adds
-Wendel's Γ bounds, a pointwise `Γ`-ratio limit, and Tannery's theorem on top of
-the finite construction.
+(`eigen_identity`) and has Rayleigh quotient `π csc(πλ)` (`schur_norm_attained`);
+hence `opNorm_eq_csc : opNorm λ = π / sin (π λ)`. The constant is moreover
+*attained*: `schur_norm_attained_l2` states that `π csc(πλ)` is the greatest
+value of the `ℓ²` bilinear form at unit vectors (`IsGreatest`), realized at
+`gx λ / ‖gx λ‖ ∈ lp (fun _ : ℕ => ℝ) 2`. The proof adds Wendel's Γ bounds, a
+pointwise `Γ`-ratio limit, and Tannery's theorem on top of the finite
+construction.
 
-**Sharpness, `λ ≥ 1/2`** (`HilbertPi/General/SharpLarge.lean`): here the norm is
-*not* attained and equals `π`. Both halves are formalized:
+**Sharpness, `λ ≥ 1/2`** (`SharpLarge.lean`, `OpNorm.lean`): here the norm is
+*not* attained and equals `π` — `opNorm_eq_pi : opNorm λ = π`, from
 
-* `hilbert_le_pi_finite` — the upper bound `‖H_λ‖ ≤ π`, by entrywise domination
+* `hilbert_le_pi_finite` — the upper bound, by entrywise domination
   `1/(i+j+λ) ≤ 1/(i+j+1/2)` from the `λ = 1/2` case;
 * `norm_ge_pi_sharp` — the lower bound: for every `ε > 0` some test vector
   `x(μ)`, `μ ∈ [1/4, 1/2)`, has Rayleigh quotient exceeding `π - ε`.
@@ -108,10 +135,9 @@ lake exe cache get   # fetch Mathlib build cache
 lake build
 ```
 
-`Test.lean` contains the axiom audit (`#print axioms` shows only
-`propext, Classical.choice, Quot.sound`) and numeric sanity checks of `M₄`
-against the values printed in the paper (`175/256, 35/128, 7/32, 5/16`):
-
-```
-lake env lean Test.lean
-```
+`Test.lean` contains the axiom audit and numeric sanity checks of `M₄` against
+the values printed in the paper (`175/256, 35/128, 7/32, 5/16`). It is a default
+target, so `lake build` runs it. Each `#print axioms` is wrapped in
+`#guard_msgs`, which turns the diagnostic into an assertion: if any audited
+declaration ever depends on an axiom beyond `propext`, `Classical.choice` and
+`Quot.sound` — `sorryAx` in particular — the build fails.
