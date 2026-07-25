@@ -1,7 +1,7 @@
 name = "HilbertPi"
-version = "0.1.0"
+version = "1.3.0"
 keywords = ["math"]
-defaultTargets = ["HilbertPi"]
+defaultTargets = ["HilbertPi", "Test"]
 
 [leanOptions]
 pp.unicode.fun = true # pretty-prints `fun a ↦ b`
@@ -16,3 +16,8 @@ rev = "v4.33.0-rc1"
 
 [[lean_lib]]
 name = "HilbertPi"
+
+# The axiom audit and numeric smoke tests; a default target so that `lake build`
+# (and hence CI) enforces them.
+[[lean_lib]]
+name = "Test"

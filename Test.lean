@@ -2,12 +2,34 @@ import HilbertPi
 
 open HilbertPi Finset
 
-/- Axiom audit: only the three standard axioms may appear. -/
-#print axioms hilbert_inequality_l2
-#print axioms hilbert_inequality_l2'
-#print axioms hilbert_summable
-#print axioms hilbert_inequality_finite
+set_option linter.style.longLine false
+
+/-! ## Axiom audit
+
+`#guard_msgs` turns each `#print axioms` from diagnostic output into an
+assertion: if any declaration below ever acquires a further axiom — `sorryAx`
+in particular — the elaboration of this file fails and so does `lake build`
+(`Test` is one of the package's default targets). -/
+
+/-- info: 'HilbertPi.half_hilbert_bound' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
 #print axioms half_hilbert_bound
+
+/-- info: 'HilbertPi.hilbert_inequality_finite' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms hilbert_inequality_finite
+
+/-- info: 'HilbertPi.hilbert_summable' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms hilbert_summable
+
+/-- info: 'HilbertPi.hilbert_inequality_l2' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms hilbert_inequality_l2
+
+/-- info: 'HilbertPi.hilbert_inequality_l2'' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms hilbert_inequality_l2'
 
 /- Numeric smoke test against the paper's M₄ (monthly.tex §3):
    first row 175/256, 35/128, 7/32, 5/16; and M₄[3,3] = 0. -/
@@ -30,9 +52,27 @@ example : T 4 1 2 = 1 / (7 / 2) := by norm_num [T]
 example : T 4 2 2 = 0 := by norm_num [T]
 
 
-/- General-λ (Schur) results. -/
+/-! ### General-λ (Schur) results -/
+
+/-- info: 'HilbertPi.General.half_hilbert_bound_general' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
 #print axioms HilbertPi.General.half_hilbert_bound_general
+
+/-- info: 'HilbertPi.General.schur_inequality_finite' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
 #print axioms HilbertPi.General.schur_inequality_finite
+
+/-- info: 'HilbertPi.General.schur_summable' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms HilbertPi.General.schur_summable
+
+/-- info: 'HilbertPi.General.schur_inequality_l2' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms HilbertPi.General.schur_inequality_l2
+
+/-- info: 'HilbertPi.General.schur_inequality_l2'' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms HilbertPi.General.schur_inequality_l2'
 
 /- At λ = 1/2, gx and gy both reduce to the central-binomial sequence. -/
 example : HilbertPi.General.gx (1/2 : ℝ) 2 = 3/8 := by
@@ -40,10 +80,38 @@ example : HilbertPi.General.gx (1/2 : ℝ) 2 = 3/8 := by
 example : HilbertPi.General.gy (1/2 : ℝ) 2 = 3/8 := by
   norm_num [HilbertPi.General.gy, Finset.prod_range_succ]
 
-/- ℓ² sharpness (paper §5): the norm π csc(πλ) is attained. -/
+/-! ### Sharpness (paper §5) -/
+
+/-- info: 'HilbertPi.General.eigen_identity' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
 #print axioms HilbertPi.General.eigen_identity
+
+/-- info: 'HilbertPi.General.schur_norm_attained' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
 #print axioms HilbertPi.General.schur_norm_attained
 
-/- λ ≥ 1/2 sharpness (paper Theorem sharp-large): ‖H_λ‖ = π. -/
+/-- info: 'HilbertPi.General.hilbert_le_pi_finite' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
 #print axioms HilbertPi.General.hilbert_le_pi_finite
+
+/-- info: 'HilbertPi.General.norm_ge_pi_sharp' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
 #print axioms HilbertPi.General.norm_ge_pi_sharp
+
+/-! ### The operator norm itself: `‖H_λ‖ = π csc(πλ)` and `‖H_λ‖ = π` -/
+
+/-- info: 'HilbertPi.General.opNorm_eq_csc' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms HilbertPi.General.opNorm_eq_csc
+
+/-- info: 'HilbertPi.General.opNorm_eq_pi' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms HilbertPi.General.opNorm_eq_pi
+
+/-- info: 'HilbertPi.General.schur_norm_attained_l2' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms HilbertPi.General.schur_norm_attained_l2
+
+/-- info: 'HilbertPi.General.sSup_bilinValuesL2' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms HilbertPi.General.sSup_bilinValuesL2

@@ -182,7 +182,8 @@ lemma M_gamma (hl0 : 0 < l) (hl1 : l < 1) {n i j : ℕ} (h : i + j < n) :
   have hc1 : ((n - 1 : ℕ) : ℝ) = (n : ℝ) - 1 := by
     rw [Nat.cast_sub (by omega : 1 ≤ n)]; push_cast; ring
   have hc2 : ((n - 1 - (i + j) : ℕ) : ℝ) = (n : ℝ) - ((i + j : ℕ) : ℝ) - 1 := by
-    rw [show n - 1 - (i + j) = n - ((i + j) + 1) by omega, Nat.cast_sub (by omega : (i + j) + 1 ≤ n)]
+    rw [show n - 1 - (i + j) = n - ((i + j) + 1) by omega,
+      Nat.cast_sub (by omega : (i + j) + 1 ≤ n)]
     push_cast; ring
   have hgxv : gx l (n - 1) = Gamma ((n : ℝ) - 1 + l) / (Gamma l * Gamma (n : ℝ)) := by
     rw [gx_eq_Gamma l hl0 (n - 1), show ((n - 1 : ℕ) : ℝ) + l = (n : ℝ) - 1 + l by rw [hc1],
@@ -226,7 +227,8 @@ lemma M_step (hl0 : 0 < l) (hl1 : l < 1) (i j n : ℕ) (h : i + j < n) :
   have hc1 : ((n - 1 : ℕ) : ℝ) = (n : ℝ) - 1 := by
     rw [Nat.cast_sub (by omega : 1 ≤ n)]; push_cast; ring
   have hc2 : ((n - 1 - (i + j) : ℕ) : ℝ) = (n : ℝ) - ((i + j : ℕ) : ℝ) - 1 := by
-    rw [show n - 1 - (i + j) = n - ((i + j) + 1) by omega, Nat.cast_sub (by omega : (i + j) + 1 ≤ n)]
+    rw [show n - 1 - (i + j) = n - ((i + j) + 1) by omega,
+      Nat.cast_sub (by omega : (i + j) + 1 ≤ n)]
     push_cast; ring
   -- closed forms
   have hMn := M_closed l hl0 hl1 h
@@ -243,7 +245,8 @@ lemma M_step (hl0 : 0 < l) (hl1 : l < 1) (i j n : ℕ) (h : i + j < n) :
     rw [show n - 1 + 1 = n by omega, hc1, show ((n : ℝ) - 1) + 1 = (n : ℝ) by ring] at hs
     exact hs
   have hgyn : gy l (n - (i + j))
-      = gy l (n - 1 - (i + j)) * (((n : ℝ) - ((i + j : ℕ) : ℝ) - l) / ((n : ℝ) - ((i + j : ℕ) : ℝ))) := by
+      = gy l (n - 1 - (i + j))
+        * (((n : ℝ) - ((i + j : ℕ) : ℝ) - l) / ((n : ℝ) - ((i + j : ℕ) : ℝ))) := by
     have hs := gy_succ l (n - 1 - (i + j))
     rw [show n - 1 - (i + j) + 1 = n - (i + j) by omega, hc2,
       show ((n : ℝ) - ((i + j : ℕ) : ℝ) - 1) + 1 - l = (n : ℝ) - ((i + j : ℕ) : ℝ) - l by ring,
@@ -253,13 +256,16 @@ lemma M_step (hl0 : 0 < l) (hl1 : l < 1) (i j n : ℕ) (h : i + j < n) :
   have hG : 0 ≤ gy l (n - 1 - (i + j)) * gx l (n - 1) :=
     mul_nonneg (gy_pos l hl1 _).le (gx_pos l hl0 _).le
   have key : ((n : ℝ) + l) / (((i + j : ℕ) : ℝ) + l)
-        * (gy l (n - 1 - (i + j)) * (((n : ℝ) - ((i + j : ℕ) : ℝ) - l) / ((n : ℝ) - ((i + j : ℕ) : ℝ)))
+        * (gy l (n - 1 - (i + j))
+            * (((n : ℝ) - ((i + j : ℕ) : ℝ) - l) / ((n : ℝ) - ((i + j : ℕ) : ℝ)))
           * (gx l (n - 1) * (((n : ℝ) - 1 + l) / (n : ℝ))))
       = ((n : ℝ) - 1 + l) / (((i + j : ℕ) : ℝ) + l) * (gy l (n - 1 - (i + j)) * gx l (n - 1))
-        * (((n : ℝ) + l) * ((n : ℝ) - ((i + j : ℕ) : ℝ) - l) / ((n : ℝ) * ((n : ℝ) - ((i + j : ℕ) : ℝ)))) := by
+        * (((n : ℝ) + l) * ((n : ℝ) - ((i + j : ℕ) : ℝ) - l)
+            / ((n : ℝ) * ((n : ℝ) - ((i + j : ℕ) : ℝ)))) := by
     field_simp
   rw [key]
-  have hbase : 0 ≤ ((n : ℝ) - 1 + l) / (((i + j : ℕ) : ℝ) + l) * (gy l (n - 1 - (i + j)) * gx l (n - 1)) :=
+  have hbase : 0 ≤ ((n : ℝ) - 1 + l) / (((i + j : ℕ) : ℝ) + l)
+      * (gy l (n - 1 - (i + j)) * gx l (n - 1)) :=
     mul_nonneg (div_nonneg (by linarith) hKl.le) hG
   have hfac : ((n : ℝ) + l) * ((n : ℝ) - ((i + j : ℕ) : ℝ) - l)
       / ((n : ℝ) * ((n : ℝ) - ((i + j : ℕ) : ℝ))) ≤ 1 := by
@@ -335,7 +341,8 @@ lemma Rn_tendsto (hl0 : 0 < l) (hl1 : l < 1) (K : ℝ) (hK : 0 ≤ K) :
     have hA : Gamma ((n : ℝ) + l) / Gamma (n : ℝ) ≤ (n : ℝ) ^ l := by
       rw [div_le_iff₀ hGN, mul_comm]; exact Gamma_add_le l hl0 hl1 hN
     have hB : Gamma ((n : ℝ) - K - l) / Gamma ((n : ℝ) - K) ≤ 1 / ((n : ℝ) - K - 1) ^ l := by
-      have hW := le_Gamma_add l hl0 hl1 (a := (n : ℝ) - K - l) (by linarith : 1 < (n : ℝ) - K - l + l)
+      have hW := le_Gamma_add l hl0 hl1 (a := (n : ℝ) - K - l)
+        (by linarith : 1 < (n : ℝ) - K - l + l)
       rw [show (n : ℝ) - K - l + l = (n : ℝ) - K by ring] at hW
       rw [div_le_div_iff₀ hGNK (by positivity), one_mul]; exact hW
     calc Gamma ((n : ℝ) + l) / Gamma (n : ℝ) * (Gamma ((n : ℝ) - K - l) / Gamma ((n : ℝ) - K))

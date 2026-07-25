@@ -9,5 +9,7 @@ import HilbertPi.General.Convolution
 import HilbertPi.General.EigenMatrix
 import HilbertPi.General.Domination
 import HilbertPi.General.Main
+import HilbertPi.General.L2
 import HilbertPi.General.Sharp
 import HilbertPi.General.SharpLarge
+import HilbertPi.General.OpNorm
