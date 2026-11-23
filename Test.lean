@@ -104,6 +104,10 @@ example : HilbertPi.General.gy (1/2 : ℝ) 2 = 3/8 := by
 #guard_msgs in
 #print axioms HilbertPi.General.opNorm_eq_csc
 
+/-- info: 'HilbertPi.General.pi_le_opNorm' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms HilbertPi.General.pi_le_opNorm
+
 /-- info: 'HilbertPi.General.opNorm_eq_pi' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms HilbertPi.General.opNorm_eq_pi

@@ -3,6 +3,7 @@ Copyright (c) 2026 Troy Lee. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Troy Lee
 -/
+import HilbertPi.Convolution
 import HilbertPi.General.L2
 import HilbertPi.General.SharpLarge
 
@@ -20,9 +21,10 @@ and proves the two sharpness theorems as statements about that number:
 * `opNorm_eq_csc` — `‖H_λ‖ = π csc(πλ)` for `0 < λ < 1/2`;
 * `opNorm_eq_pi` — `‖H_λ‖ = π` for every `λ ≥ 1/2` (paper Thm. `sharp-large`).
 
-The lower bounds come from the `ℓ²` Rayleigh estimates of `Sharp.lean` and
-`SharpLarge.lean` through `lt_opNorm_of_tsum`, which extracts a finitely
-supported truncation of an `ℓ²` test vector.
+For `0 < λ < 1/2` the lower bound comes from the `ℓ²` Rayleigh estimate of
+`Sharp.lean` through `lt_opNorm_of_tsum`, which extracts a finitely supported
+truncation of an `ℓ²` test vector. For `λ ≥ 1/2` it is `pi_le_opNorm`, which
+tests the form on truncated central binomial vectors, as in the paper's proof.
 
 For `0 < λ < 1/2` the norm is moreover *attained*, and this is recorded as a
 genuine `ℓ²` statement:
@@ -192,30 +194,159 @@ theorem opNorm_eq_csc {l : ℝ} (hl0 : 0 < l) (hl1 : l < 1 / 2) :
 lemma finiteBound_pi {lam : ℝ} (hlam : 1 / 2 ≤ lam) : FiniteBound lam π :=
   fun N u v => hilbert_le_pi_finite hlam N u v
 
+section LandauTestVector
+
+open Filter Topology
+
+/-- The Rayleigh quotient at a finitely supported nonzero vector is at most the
+norm. -/
+lemma bilin_le_opNorm_mul {lam C : ℝ} (hlam : 0 < lam) (hfin : FiniteBound lam C)
+    (N : ℕ) (w : ℕ → ℝ) (hw : 0 < ∑ i ∈ range N, w i ^ 2) :
+    ∑ i ∈ range N, ∑ j ∈ range N, w i * w j / ((i : ℝ) + (j : ℝ) + lam)
+      ≤ opNorm lam * ∑ i ∈ range N, w i ^ 2 := by
+  by_contra h
+  exact lt_irrefl _ (lt_opNorm hlam hfin N w hw (not_le.mp h))
+
+/-- Testing `H_λ` on the truncated central binomial vector: the convolution
+identity evaluates the part of the form with `i + j < n`. -/
+lemma sum_inv_le_bilin {lam : ℝ} (hlam : 0 < lam) (n : ℕ) :
+    ∑ k ∈ range n, 1 / ((k : ℝ) + lam)
+      ≤ ∑ i ∈ range n, ∑ j ∈ range n,
+          HilbertPi.x i * HilbertPi.x j / ((i : ℝ) + (j : ℝ) + lam) := by
+  set F : ℕ × ℕ → ℝ := fun p =>
+    HilbertPi.x p.1 * HilbertPi.x p.2 / ((p.1 : ℝ) + (p.2 : ℝ) + lam) with hF
+  have hFnn : ∀ p, 0 ≤ F p := fun p =>
+    div_nonneg (mul_nonneg (HilbertPi.x_nonneg _) (HilbertPi.x_nonneg _))
+      (denom_pos hlam _ _).le
+  have hk : ∀ k ∈ range n, 1 / ((k : ℝ) + lam) = ∑ p ∈ antidiagonal k, F p := by
+    intro k _
+    have hc : ((k : ℝ) + lam) ≠ 0 := by positivity
+    have hterm : ∀ p ∈ antidiagonal k, F p =
+        (HilbertPi.x p.1 * HilbertPi.x p.2) * (1 / ((k : ℝ) + lam)) := by
+      intro p hp
+      have hsum : (p.1 : ℝ) + (p.2 : ℝ) = k := by
+        exact_mod_cast mem_antidiagonal.mp hp
+      simp only [hF, hsum]
+      ring
+    rw [sum_congr rfl hterm, ← sum_mul,
+      Finset.Nat.sum_antidiagonal_eq_sum_range_succ_mk]
+    have := HilbertPi.conv k
+    simp only at this ⊢
+    rw [this, one_mul]
+  have hdisj : (↑(range n) : Set ℕ).PairwiseDisjoint (fun k => antidiagonal k) := by
+    intro a _ b _ hab
+    refine Finset.disjoint_left.mpr fun p hpa hpb => hab ?_
+    rw [mem_antidiagonal] at hpa hpb
+    omega
+  have hsub : (range n).biUnion (fun k => antidiagonal k) ⊆ range n ×ˢ range n := by
+    intro p hp
+    obtain ⟨k, hk, hpk⟩ := mem_biUnion.mp hp
+    rw [mem_range] at hk
+    rw [mem_antidiagonal] at hpk
+    simp only [mem_product, mem_range]
+    omega
+  calc ∑ k ∈ range n, 1 / ((k : ℝ) + lam)
+      = ∑ k ∈ range n, ∑ p ∈ antidiagonal k, F p := sum_congr rfl hk
+    _ = ∑ p ∈ (range n).biUnion (fun k => antidiagonal k), F p :=
+        (sum_biUnion hdisj).symm
+    _ ≤ ∑ p ∈ range n ×ˢ range n, F p :=
+        sum_le_sum_of_subset_of_nonneg hsub fun p _ _ => hFnn p
+    _ = _ := sum_product _ _ _
+
+/-- The Wallis quantity converges: `(m + 1/2) x_m² → 1/π`. -/
+lemma tendsto_wallis_u : Tendsto HilbertPi.u atTop (𝓝 (1 / π)) := by
+  have hW := Real.Wallis.tendsto_W_nhds_pi_div_two
+  have h2 : Tendsto (fun m => 1 / (2 * Real.Wallis.W m)) atTop (𝓝 (1 / (2 * (π / 2)))) :=
+    tendsto_const_nhds.div (hW.const_mul 2) (by positivity)
+  have he : (2 : ℝ) * (π / 2) = π := by ring
+  rw [he] at h2
+  exact h2.congr fun m => (HilbertPi.u_eq_inv_two_W m).symm
+
+/-- For all large `k`, `1/(k+λ) ≥ (π-ε) x_k²`. -/
+lemma exists_inv_ge_x_sq {lam ε : ℝ} (hlam : 0 < lam) (hε : 0 < ε) :
+    ∃ K : ℕ, ∀ k ≥ K, (π - ε) * HilbertPi.x k ^ 2 ≤ 1 / ((k : ℝ) + lam) := by
+  have hπ := Real.pi_pos
+  have hratio : Tendsto (fun k : ℕ => ((k : ℝ) + lam) / ((k : ℝ) + 1 / 2)) atTop (𝓝 1) := by
+    have hden : Tendsto (fun k : ℕ => (k : ℝ) + 1 / 2) atTop atTop :=
+      tendsto_atTop_add_const_right _ _ tendsto_natCast_atTop_atTop
+    have hquot : Tendsto (fun k : ℕ => (lam - 1 / 2) / ((k : ℝ) + 1 / 2)) atTop (𝓝 0) :=
+      hden.const_div_atTop _
+    have h1 : Tendsto (fun k : ℕ => 1 + (lam - 1 / 2) / ((k : ℝ) + 1 / 2)) atTop (𝓝 (1 + 0)) :=
+      tendsto_const_nhds.add hquot
+    rw [add_zero] at h1
+    refine h1.congr fun k => ?_
+    have : ((k : ℝ) + 1 / 2) ≠ 0 := by positivity
+    field_simp
+    ring
+  have hprod : Tendsto (fun k : ℕ => (π - ε) *
+      (((k : ℝ) + lam) / ((k : ℝ) + 1 / 2) * HilbertPi.u k)) atTop
+      (𝓝 ((π - ε) * (1 * (1 / π)))) :=
+    (hratio.mul tendsto_wallis_u).const_mul _
+  have hlim : (π - ε) * (1 * (1 / π)) < 1 := by
+    rw [one_mul, mul_one_div, div_lt_one hπ]
+    linarith
+  obtain ⟨K, hK⟩ := eventually_atTop.mp (hprod.eventually_lt_const hlim)
+  refine ⟨K, fun k hk => ?_⟩
+  have h := hK k hk
+  have hc : (0 : ℝ) < (k : ℝ) + lam := by positivity
+  have hd : (0 : ℝ) < (k : ℝ) + 1 / 2 := by positivity
+  have he : (π - ε) * (((k : ℝ) + lam) / ((k : ℝ) + 1 / 2) * HilbertPi.u k)
+      = (π - ε) * HilbertPi.x k ^ 2 * ((k : ℝ) + lam) := by
+    simp only [HilbertPi.u]
+    field_simp
+  rw [he] at h
+  rw [le_div_iff₀ hc]
+  exact h.le
+
+/-- **The lower bound `π ≤ ‖H_λ‖`, for every `λ > 0`** (paper Thm.
+`sharp-large`). The test vectors are the truncated central binomial vectors. -/
+theorem pi_le_opNorm {lam C : ℝ} (hlam : 0 < lam) (hfin : FiniteBound lam C) :
+    π ≤ opNorm lam := by
+  refine le_of_forall_pos_le_add fun ε hε => ?_
+  by_contra hcon
+  rw [not_le] at hcon
+  obtain ⟨K, hK⟩ := exists_inv_ge_x_sq hlam hε
+  set c := opNorm lam with hc
+  set Sn : ℕ → ℝ := fun n => ∑ m ∈ range n, HilbertPi.x m ^ 2 with hSn
+  have hd : 0 < π - ε - c := by linarith
+  obtain ⟨N, hN⟩ := half_partial_unbounded ((π - ε) * Sn K / (π - ε - c))
+  simp only [gx_half_eq] at hN
+  set n := max N (K + 1) with hn
+  have hNn : N ≤ n := le_max_left _ _
+  have hKn : K ≤ n := le_trans (Nat.le_succ K) (le_max_right _ _)
+  have hSnn : Sn N ≤ Sn n :=
+    sum_le_sum_of_subset_of_nonneg (range_subset_range.mpr hNn) fun _ _ _ => sq_nonneg _
+  have hSpos : 0 < Sn n := by
+    refine sum_pos' (fun _ _ => sq_nonneg _) ⟨0, mem_range.mpr ?_, ?_⟩
+    · exact lt_of_lt_of_le (Nat.succ_pos K) (le_max_right _ _)
+    · exact pow_pos (HilbertPi.x_pos 0) 2
+  have hupper : ∑ k ∈ range n, 1 / ((k : ℝ) + lam) ≤ c * Sn n :=
+    (sum_inv_le_bilin hlam n).trans (bilin_le_opNorm_mul hlam hfin n HilbertPi.x hSpos)
+  have hlower : (π - ε) * (Sn n - Sn K) ≤ ∑ k ∈ range n, 1 / ((k : ℝ) + lam) := by
+    have hsplit : Sn n - Sn K = ∑ k ∈ Ico K n, HilbertPi.x k ^ 2 := by
+      simp only [hSn]
+      rw [Finset.sum_Ico_eq_sub _ hKn]
+    rw [hsplit, mul_sum]
+    calc ∑ k ∈ Ico K n, (π - ε) * HilbertPi.x k ^ 2
+        ≤ ∑ k ∈ Ico K n, 1 / ((k : ℝ) + lam) :=
+          sum_le_sum fun k hk => hK k (mem_Ico.mp hk).1
+      _ ≤ ∑ k ∈ range n, 1 / ((k : ℝ) + lam) :=
+          sum_le_sum_of_subset_of_nonneg
+            (fun k hk => mem_range.mpr (mem_Ico.mp hk).2)
+            (fun k _ _ => by positivity)
+  have hbig : (π - ε) * Sn K < (π - ε - c) * Sn n := by
+    have h1 : (π - ε) * Sn K / (π - ε - c) < Sn n := lt_of_lt_of_le hN hSnn
+    rwa [div_lt_iff₀ hd, mul_comm (Sn n)] at h1
+  nlinarith [hupper, hlower, hbig]
+
+end LandauTestVector
+
 /-- **The norm of `H_λ` for `λ ≥ 1/2`** (paper Thm. `sharp-large`):
 `‖H_λ‖ = π`. -/
 theorem opNorm_eq_pi {lam : ℝ} (hlam : 1 / 2 ≤ lam) : opNorm lam = π := by
   have hlam0 : (0 : ℝ) < lam := by linarith
   have hfin := finiteBound_pi hlam
-  refine le_antisymm (opNorm_le hfin) ?_
-  refine le_of_forall_pos_lt_add fun ε hε => ?_
-  rcases le_or_gt π ε with hbig | hbig
-  · linarith [opNorm_pos hlam0 hfin]
-  · obtain ⟨μ, hμ4, hμ2, hM⟩ := norm_ge_pi_sharp hlam hε
-    have hμ0 : (0 : ℝ) < μ := by linarith
-    have hμlam : μ ≤ lam := by linarith
-    have hsum : Summable (fun q : ℕ × ℕ =>
-        gx μ q.1 * gx μ q.2 / ((q.1 : ℝ) + (q.2 : ℝ) + lam)) := by
-      refine Summable.of_nonneg_of_le
-        (fun q => div_nonneg (mul_nonneg (gx_pos μ hμ0 _).le (gx_pos μ hμ0 _).le)
-          (denom_pos hlam0 _ _).le) (fun q => ?_) (gx_double_summable μ hμ0 hμ2)
-      have hnum : (0 : ℝ) ≤ gx μ q.1 * gx μ q.2 :=
-        mul_nonneg (gx_pos μ hμ0 _).le (gx_pos μ hμ0 _).le
-      have hd : (0 : ℝ) < (q.1 : ℝ) + (q.2 : ℝ) + μ := denom_pos hμ0 _ _
-      gcongr
-    have := lt_opNorm_of_tsum hlam0 hfin (by linarith) (gx μ) (gx_pos μ hμ0)
-      (gx_sq_summable μ hμ0 hμ2) hsum hM
-    linarith
+  exact le_antisymm (opNorm_le hfin) (pi_le_opNorm hlam0 hfin)
 
 /-! ### Attainment on `ℓ²` for `0 < λ < 1/2` -/
 

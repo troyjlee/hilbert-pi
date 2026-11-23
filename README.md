@@ -88,7 +88,7 @@ general-`λ` names are in `HilbertPi.General`.
 | Prop. (`exact-eig`) | `‖H_λ‖ = π csc(πλ)` for `λ < 1/2` | — | `opNorm_eq_csc` |
 | Prop. (`exact-eig`) | the norm is *attained* on `ℓ²` | — | `schur_norm_attained_l2` |
 | Thm. (`sharp-large`) | `‖H_λ‖ ≤ π` for `λ ≥ 1/2` | — | `hilbert_le_pi_finite` |
-| Thm. (`sharp-large`) | Rayleigh quotient `> π - ε` | — | `norm_ge_pi_sharp` |
+| Thm. (`sharp-large`) | lower bound `π ≤ ‖H_λ‖`, for every `λ > 0` | — | `pi_le_opNorm` |
 | Thm. (`sharp-large`) | `‖H_λ‖ = π` for `λ ≥ 1/2` | — | `opNorm_eq_pi` |
 
 **The norm** (`HilbertPi/General/OpNorm.lean`). `opNorm λ` is the norm exactly as
@@ -100,10 +100,11 @@ opNorm λ = sSup { ∑_{i,j<N} u_i v_j /(i+j+λ) : ∑_{i<N} u_i² = ∑_{j<N} v
 ```
 
 Upper bounds on it come from `schur_inequality_finite` and `hilbert_le_pi_finite`
-directly; lower bounds come from the `ℓ²` Rayleigh estimates through
-`lt_opNorm_of_tsum`, which truncates an `ℓ²` test vector to a finitely supported
-one (the terms are nonnegative, so a square truncation `range N ×ˢ range N`
-eventually exceeds any bound below the total).
+directly. For `λ < 1/2` the lower bound comes from the `ℓ²` Rayleigh estimate
+through `lt_opNorm_of_tsum`, which truncates an `ℓ²` test vector to a finitely
+supported one (the terms are nonnegative, so a square truncation
+`range N ×ˢ range N` eventually exceeds any bound below the total). For `λ ≥ 1/2`
+the test vectors are finitely supported from the start.
 
 **Sharpness, `0 < λ < 1/2`** (`Sharp.lean`, `OpNorm.lean`): the square-summable
 eigenvector `gx λ` satisfies `∑' j, gx_j/(i+j+λ) = π csc(πλ) · gx_i`
@@ -120,13 +121,18 @@ construction.
 
 * `hilbert_le_pi_finite` — the upper bound, by entrywise domination
   `1/(i+j+λ) ≤ 1/(i+j+1/2)` from the `λ = 1/2` case;
-* `norm_ge_pi_sharp` — the lower bound: for every `ε > 0` some test vector
-  `x(μ)`, `μ ∈ [1/4, 1/2)`, has Rayleigh quotient exceeding `π - ε`.
+* `pi_le_opNorm` — the lower bound, valid for every `λ > 0`.
 
-The lower bound uses the `μ < 1/2` eigenvectors as test vectors, the
+The lower bound follows the paper's proof. It tests the form on the truncated
+central binomial vector `(x_0, …, x_{n-1})`, where the convolution identity gives
+`∑_{k<n} 1/(k+λ) ≤ ‖H_λ‖ ∑_{m<n} x_m²` (`sum_inv_le_bilin`), and then compares the
+two divergent sums using Wallis's limit (`exists_inv_ge_x_sq`).
+
+`SharpLarge.lean` also keeps the earlier, independent lower bound
+`norm_ge_pi_sharp`, which uses the `μ < 1/2` eigenvectors as test vectors, the
 perturbation identity `∑ H_μ = ∑ H_λ + (λ-μ)E`, the *factored* error bound
 `E ≤ D²` (`E_le_D_sq`), and the divergence of `‖x(μ)‖²` as `μ ↑ 1/2`
-(`norm_sq_unbounded`).
+(`norm_sq_unbounded`). `opNorm_eq_pi` no longer depends on it.
 
 ## Building
 
